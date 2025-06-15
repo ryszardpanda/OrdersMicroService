@@ -1,6 +1,6 @@
 package com.Orders.OrdersMicroService.controller;
 
-import com.Orders.OrdersMicroService.model.dto.CartDTO;
+import com.Orders.OrdersMicroService.model.dto.cart.CartDTO;
 import com.Orders.OrdersMicroService.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

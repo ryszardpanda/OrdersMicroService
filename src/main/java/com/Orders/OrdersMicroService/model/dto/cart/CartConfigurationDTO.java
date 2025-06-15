@@ -1,4 +1,4 @@
-package com.Orders.OrdersMicroService.model.dto;
+package com.Orders.OrdersMicroService.model.dto.cart;
 
 import com.Orders.OrdersMicroService.common.ProductsType;
 import lombok.AllArgsConstructor;
