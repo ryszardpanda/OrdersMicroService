@@ -21,10 +21,10 @@ public class OrderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;                         // PK w bazie
+    private Long id;
 
     @Column(nullable = false, unique = true, length = 30)
-    private String orderNumber;              // np. ORD-2025-000123
+    private String orderNumber;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -34,9 +34,8 @@ public class OrderEntity {
     private OrderStatus status = OrderStatus.NEW;
 
     @Column(nullable = false, length = 36)
-    private String userId;                   // identyfikator klienta z Auth MS
+    private String userId;
 
-    // ---------- adresy ----------
     @Embedded @AttributeOverrides({
             @AttributeOverride(name = "firstName",  column=@Column(name="ship_first_name")),
             @AttributeOverride(name = "lastName",   column=@Column(name="ship_last_name")),
@@ -57,7 +56,6 @@ public class OrderEntity {
     })
     private OrderAddress billing;
 
-    // ---------- wynik finansowy ----------
     @Column(nullable = false, scale = 2)
     private BigDecimal totalNet;             // suma pozycji netto
     @Column(nullable = false, scale = 2)
@@ -67,7 +65,6 @@ public class OrderEntity {
     @Column(nullable = false, length = 3)
     private String currency = "PLN";
 
-    // ---------- relacja ----------
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> items = new ArrayList<>();
 }

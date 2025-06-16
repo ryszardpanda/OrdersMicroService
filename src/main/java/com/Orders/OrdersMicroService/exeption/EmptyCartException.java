@@ -4,10 +4,10 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public class WrongTypeException extends RuntimeException{
-    private final HttpStatus httpStatus;
+public class EmptyCartException extends RuntimeException{
+    private HttpStatus httpStatus;
 
-    public WrongTypeException(String message, HttpStatus httpStatus) {
+    public EmptyCartException(String message, HttpStatus httpStatus) {
         super(message);
         this.httpStatus = httpStatus;
     }

@@ -1,5 +1,6 @@
 package com.Orders.OrdersMicroService.client;
 
+import com.Orders.OrdersMicroService.exeption.errorDecoder.CartErrorDecoder;
 import feign.Logger;
 import feign.Retryer;
 import feign.codec.ErrorDecoder;
@@ -9,10 +10,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CartMicroserviceConfiguration {
 
-//    @Bean
-//    public ErrorDecoder productFetcherErrorDecoder(){
-//        return new ProductErrorDecoder();
-//    }
+    @Bean
+    public ErrorDecoder cartFetcherErrorDecoder(){
+        return new CartErrorDecoder();
+    }
 
     @Bean
     public Retryer feignRetryer(){
