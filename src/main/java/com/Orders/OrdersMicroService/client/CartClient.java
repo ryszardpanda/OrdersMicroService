@@ -5,7 +5,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(value = "cart-micro-service", url = "${base.url.cart-micro-service}")
+@FeignClient(value = "cart-microservice", url = "${base.url.cart-micro-service}")
 public interface CartClient {
 
     @GetMapping("/{id}")
