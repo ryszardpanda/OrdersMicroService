@@ -16,5 +16,4 @@ public class OrderItemDTO {
     private BigDecimal unitPrice;
     private int quantity;
     private List<OrderItemConfigDTO> configurations;
-
 }

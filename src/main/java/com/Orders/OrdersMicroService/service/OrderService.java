@@ -21,88 +21,101 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class OrderService {
 
-    @Service
-    @RequiredArgsConstructor
-    @Slf4j
-    public class OrderService {
+    private final CartClient cartClient;
+    private final OrderEntityRepository orderRepository;
+    private final OrderMapper orderMapper;
+    private static final BigDecimal VAT_MULTIPLIER = BigDecimal.valueOf(1.23);
 
-        private final CartClient cartClient;
-        private final OrderEntityRepository orderRepository;
-        private final OrderMapper orderMapper;
+    public CartDTO getCartById(Long cartId) {
+        return cartClient.getCartById(cartId);
+    }
 
-        public CartDTO getCartById(Long cartId){
-            return cartClient.getCartById(cartId);
+    public Page<OrderSummaryDTO> getOrdersByUser(String userId, Pageable p) {
+        return orderRepository.findAllByUserId(userId, p)
+                .map(orderMapper::toSummary);
+    }
+
+    @Transactional
+    public OrderResponseDTO createOrder(String userId, Long cartId, CreateOrderRequestDTO createOrderRequestDTO) {
+
+        CartDTO cartDTO = checkCart(cartId, userId);
+
+        OrderEntity order = checkCorrectnessOfOrder(userId, createOrderRequestDTO, cartDTO);
+
+        OrderEntity orderWithPriceInfo = calculateAndSetPriceOfOrder(order);
+
+        OrderEntity savedOrder = orderRepository.save(orderWithPriceInfo);
+        log.info("Created order {} for user {}", savedOrder.getOrderNumber(), userId);
+
+        return orderMapper.toDto(savedOrder);
+    }
+
+    private CartDTO checkCart(Long cartId, String userId) {
+        CartDTO cart = cartClient.getCartById(cartId);
+        if (cart == null || cart.getItems().isEmpty()) {
+            throw new EmptyCartException("Cart is empty", HttpStatus.BAD_REQUEST);
         }
 
-        public Page<OrderSummaryDTO> getOrdersByUser(String userId, Pageable p) {
-            return orderRepository.findAllByUserId(userId, p)
-                    .map(orderMapper::toSummary);
+        if (!userId.equals(cart.getUserId())) {
+            throw new ForbiddenException("Cart is not connected to user: " + userId, HttpStatus.FORBIDDEN);
+        }
+        return cart;
+    }
+
+    private OrderEntity checkCorrectnessOfOrder(String userId, CreateOrderRequestDTO createOrderRequestDTO, CartDTO cart) {
+
+        OrderEntity order = orderMapper.toOrderEntity(cart);
+        order.setUserId(userId);
+        order.setOrderNumber(generateNumber());
+
+        if (createOrderRequestDTO != null) {
+            if (createOrderRequestDTO.getShipping() != null) {
+                order.setShipping(orderMapper.toOrderAddress(createOrderRequestDTO.getShipping()));
+            }
+            if (createOrderRequestDTO.getBilling() != null) {
+                order.setBilling(orderMapper.toOrderAddress(createOrderRequestDTO.getBilling()));
+            }
+
+            log.info("ORDER.shipping = {}", order.getShipping());
         }
 
-        /**
-         * Tworzy zamówienie na podstawie koszyka danego użytkownika
-         *
-         * @param userId identyfikator użytkownika (z JWT albo parametru)
-         * @param cartId identyfikator koszyka (jeśli koszyków może być wiele)
-         * @return DTO nowo utworzonego zamówienia
-         */
-        @Transactional
-        public OrderResponseDTO createOrder(String userId, Long cartId, CreateOrderRequestDTO createOrderRequestDTO) {
+        return order;
+    }
 
-            CartDTO cart = cartClient.getCartById(cartId);
-            if (cart == null || cart.getItems().isEmpty()) {
-                throw new EmptyCartException("Cart is empty", HttpStatus.BAD_REQUEST);
-            }
+    private OrderEntity calculateAndSetPriceOfOrder(OrderEntity order) {
+        BigDecimal totalNet = BigDecimal.ZERO;
+        BigDecimal totalGross = BigDecimal.ZERO;
 
-            if (!userId.equals(cart.getUserId())) {
-                throw new ForbiddenException("Cart is not connected to user: " + userId, HttpStatus.NOT_FOUND);
-            }
+        for (OrderItemEntity item : order.getItems()) {
+            BigDecimal lineNet = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+            BigDecimal lineGross = lineNet.multiply(VAT_MULTIPLIER)
+                    .setScale(2, RoundingMode.HALF_UP);
 
-            OrderEntity order = orderMapper.toOrderEntity(cart);
-            order.setUserId(userId);
-            order.setOrderNumber(generateNumber());
+            item.setLineNet(lineNet);
+            item.setLineGross(lineGross);
+            item.setOrder(order);
 
-            if (createOrderRequestDTO != null) {
-                if (createOrderRequestDTO.getShipping() != null) {
-                    order.setShipping(orderMapper.toOrderAddress(createOrderRequestDTO.getShipping()));
-                }
-                if (createOrderRequestDTO.getBilling() != null) {
-                    order.setBilling(orderMapper.toOrderAddress(createOrderRequestDTO.getBilling()));
-                }
-
-                log.info("ORDER.shipping = {}", order.getShipping());
-            }
-
-            BigDecimal totalNet   = BigDecimal.ZERO;
-            BigDecimal totalGross = BigDecimal.ZERO;
-
-            for (OrderItemEntity item : order.getItems()) {
-                BigDecimal lineNet   = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-                BigDecimal lineGross = lineNet;
-                item.setLineNet(lineNet);
-                item.setLineGross(lineGross);
-
-                totalNet   = totalNet.add(lineNet);
-                totalGross = totalGross.add(lineGross);
-                item.setOrder(order);
-            }
-
-            order.setTotalNet(totalNet);
-            order.setTotalGross(totalGross);
-
-            OrderEntity saved = orderRepository.save(order);
-            log.info("Created order {} for user {}", saved.getOrderNumber(), userId);
-
-            return orderMapper.toDto(saved);
+            totalNet = totalNet.add(lineNet);
+            totalGross = totalGross.add(lineGross);
         }
 
-        /** Generowanie publicznego numeru zamówienia, np. ORD-2025-00123 */
-        private String generateNumber() {
-            int rand = ThreadLocalRandom.current().nextInt(10000, 99999);
-            return "ORD-" + LocalDate.now().getYear() + "-" + rand;
-        }
+        order.setTotalNet(totalNet);
+        order.setTotalGross(totalGross);
+
+        return order;
+    }
+
+    private String generateNumber() {
+        int rand = ThreadLocalRandom.current().nextInt(10000, 99999);
+        return "ORD-" + LocalDate.now().getYear() + "-" + rand;
+    }
 }
