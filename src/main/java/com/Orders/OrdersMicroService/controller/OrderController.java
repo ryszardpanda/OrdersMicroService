@@ -1,6 +1,5 @@
 package com.Orders.OrdersMicroService.controller;
 
-import com.Orders.OrdersMicroService.model.dto.cart.CartDTO;
 import com.Orders.OrdersMicroService.model.dto.order.CreateOrderRequestDTO;
 import com.Orders.OrdersMicroService.model.dto.order.OrderResponseDTO;
 import com.Orders.OrdersMicroService.model.dto.order.OrderSummaryDTO;
@@ -22,13 +21,6 @@ import org.springframework.data.domain.Pageable;
 public class OrderController {
 
   private final OrderService orderService;
-    //Controlna metoda sprawdzajaca feigna
-    @GetMapping(value="/{cartId}", produces= MediaType.APPLICATION_JSON_VALUE)
-      CartDTO getCart(@PathVariable Long cartId){
-        CartDTO cartById = orderService.getCartById(cartId);
-        log.info(cartById.toString());
-        return cartById;
-    }
 
   @GetMapping
   public Page<OrderSummaryDTO> getOrdersByUser(@RequestParam String userId, @ParameterObject Pageable pageable) {

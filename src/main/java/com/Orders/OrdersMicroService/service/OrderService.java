@@ -35,10 +35,6 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private static final BigDecimal VAT_MULTIPLIER = BigDecimal.valueOf(1.23);
 
-    public CartDTO getCartById(Long cartId) {
-        return cartClient.getCartById(cartId);
-    }
-
     public Page<OrderSummaryDTO> getOrdersByUser(String userId, Pageable p) {
         return orderRepository.findAllByUserId(userId, p)
                 .map(orderMapper::toSummary);
