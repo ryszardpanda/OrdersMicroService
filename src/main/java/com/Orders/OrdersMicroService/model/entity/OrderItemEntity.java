@@ -23,13 +23,12 @@ public class OrderItemEntity {
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "order_id")
     private OrderEntity order;
 
-    // snapshot z katalogu produktów
     private Long productId;
     private String name;
     @Column(scale = 2) private BigDecimal unitPrice;
     private int quantity;
-    @Column(scale = 2) private BigDecimal lineNet;   // unitPrice * qty
-    @Column(scale = 2) private BigDecimal lineGross; // z VAT
+    @Column(scale = 2) private BigDecimal lineNet;
+    @Column(scale = 2) private BigDecimal lineGross;
 
     @OneToMany(mappedBy = "orderItem", cascade = ALL, orphanRemoval = true)
     private List<OrderItemConfigEntity> configurations = new ArrayList<>();

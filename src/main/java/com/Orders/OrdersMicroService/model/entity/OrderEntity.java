@@ -2,6 +2,7 @@ package com.Orders.OrdersMicroService.model.entity;
 
 import com.Orders.OrdersMicroService.common.OrderStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,6 +18,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class OrderEntity {
 
     @Id
@@ -57,9 +59,9 @@ public class OrderEntity {
     private OrderAddress billing;
 
     @Column(nullable = false, scale = 2)
-    private BigDecimal totalNet;             // suma pozycji netto
+    private BigDecimal totalNet;
     @Column(nullable = false, scale = 2)
-    private BigDecimal totalGross;           // + podatek
+    private BigDecimal totalGross;
     @Column(nullable = false, scale = 2)
     private BigDecimal shippingCost = BigDecimal.ZERO;
     @Column(nullable = false, length = 3)
