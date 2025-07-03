@@ -25,7 +25,7 @@ public class OrderItemConfigEntity {
     @JoinColumn(name = "order_item_id")
     private OrderItemEntity orderItem;
 
-    private Long configId;                  // ID konfiguracji w mikroserwisie produktów
+    private Long configId;
     private String name;
     @Column(scale = 2)
     private BigDecimal price;
