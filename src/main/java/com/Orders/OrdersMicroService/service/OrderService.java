@@ -9,6 +9,7 @@ import com.Orders.OrdersMicroService.model.dto.order.CreateOrderRequestDTO;
 import com.Orders.OrdersMicroService.model.dto.order.OrderResponseDTO;
 import com.Orders.OrdersMicroService.model.dto.order.OrderSummaryDTO;
 import com.Orders.OrdersMicroService.model.entity.OrderEntity;
+import com.Orders.OrdersMicroService.model.entity.OrderItemConfigEntity;
 import com.Orders.OrdersMicroService.model.entity.OrderItemEntity;
 import com.Orders.OrdersMicroService.repository.OrderEntityRepository;
 import jakarta.transaction.Transactional;
@@ -47,6 +48,14 @@ public class OrderService {
 
         OrderEntity order = checkCorrectnessOfOrder(userId, createOrderRequestDTO, cartDTO);
 
+        for (OrderItemEntity item : order.getItems()) {
+            if (item.getConfigurations() != null) {
+                for (OrderItemConfigEntity config : item.getConfigurations()) {
+                    config.setOrderItem(item);
+                }
+            }
+        }
+
         OrderEntity orderWithPriceInfo = calculateAndSetPriceOfOrder(order);
 
         OrderEntity savedOrder = orderRepository.save(orderWithPriceInfo);
@@ -54,6 +63,7 @@ public class OrderService {
 
         return orderMapper.toDto(savedOrder);
     }
+
 
     private CartDTO checkCart(Long cartId, String userId) {
         CartDTO cart = cartClient.getCartById(cartId);

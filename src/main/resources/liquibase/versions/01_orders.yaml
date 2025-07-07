@@ -129,7 +129,7 @@ databaseChangeLog:
             referencedColumnNames: id
             onDelete: CASCADE
 
-        - addIndex:
+        - createIndex:
             tableName: order_item
             indexName: idx_order_item_orderid
             columns:
@@ -180,7 +180,7 @@ databaseChangeLog:
             referencedColumnNames: id
             onDelete: CASCADE
 
-        - addIndex:
+        - createIndex:
             tableName: order_item_config
             indexName: idx_cfg_orderitemid
             columns:
