@@ -11,6 +11,7 @@ import com.Orders.OrdersMicroService.model.entity.OrderAddress;
 import com.Orders.OrdersMicroService.model.entity.OrderEntity;
 import com.Orders.OrdersMicroService.model.entity.OrderItemConfigEntity;
 import com.Orders.OrdersMicroService.model.entity.OrderItemEntity;
+import com.Orders.OrdersMicroService.model.event.InvoiceRequestEvent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -44,4 +45,13 @@ public interface OrderMapper {
     OrderSummaryDTO toSummary(OrderEntity orderEntity);
 
     OrderAddress toOrderAddress(OrderAddressDTO orderAddressDTO);
+
+    @Mapping(target = "firstName", source = "billing.firstName")
+    @Mapping(target = "lastName", source = "billing.lastName")
+    @Mapping(target = "street", source = "billing.street")
+    @Mapping(target = "city", source = "billing.city")
+    @Mapping(target = "zip", source = "billing.zip")
+    @Mapping(target = "phone", source = "billing.phone")
+    @Mapping(target = "orderCreatedAt", source = "createdAt")
+    InvoiceRequestEvent toInvoiceRequestEvent(OrderEntity order);
 }
