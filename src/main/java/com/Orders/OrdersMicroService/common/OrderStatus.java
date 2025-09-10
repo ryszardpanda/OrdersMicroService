@@ -12,7 +12,8 @@ public enum OrderStatus {
     PAID("Paid"),
     SHIPPED("Shipped"),
     FINISHED("Finished"),
-    CANCELED("Caceled");
+    CANCELED("Caceled"),
+    COMPLETED("Completed");
 
     private String name;
 

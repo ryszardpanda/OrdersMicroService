@@ -7,7 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import org.springframework.data.domain.Pageable;
 
+import java.util.Optional;
+
 @Repository
 public interface OrderEntityRepository extends JpaRepository<OrderEntity, Long> {
     Page<OrderEntity> findAllByUserId(String userId, Pageable pageable);
+    Optional<OrderEntity> findByOrderNumber(String orderNumber);
 }

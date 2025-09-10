@@ -11,6 +11,7 @@ import com.Orders.OrdersMicroService.model.dto.order.*;
 import com.Orders.OrdersMicroService.model.entity.OrderAddress;
 import com.Orders.OrdersMicroService.model.entity.OrderEntity;
 import com.Orders.OrdersMicroService.model.entity.OrderItemEntity;
+import com.Orders.OrdersMicroService.rabbit.OrderEventPublisher;
 import com.Orders.OrdersMicroService.repository.OrderEntityRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,13 +37,15 @@ public class OrderServiceTest {
     private OrderEntityRepository orderRepository;
     private OrderMapper orderMapper;
     private OrderService orderService;
+    private OrderEventPublisher orderEventPublisher;
 
     @BeforeEach
     void setUp() {
         this.cartClient = Mockito.mock(CartClient.class);
         this.orderRepository = Mockito.mock(OrderEntityRepository.class);
         this.orderMapper = Mappers.getMapper(OrderMapper.class);
-        this.orderService = new OrderService(cartClient, orderRepository, orderMapper);
+        this.orderEventPublisher = orderEventPublisher;
+        this.orderService = new OrderService(cartClient, orderRepository, orderMapper, orderEventPublisher);
     }
 
     @Test

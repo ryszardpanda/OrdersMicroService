@@ -36,4 +36,18 @@ public class OrderExceptionHandler {
         return new ResponseEntity<ErrorMessage>(
                 new ErrorMessage(ex.getMessage()), new HttpHeaders(), ex.getHttpStatus());
     }
+
+    @ExceptionHandler({OrderNotFoundException.class})
+    public ResponseEntity<ErrorMessage> handleOrderNotFoundException(
+            OrderNotFoundException ex) {
+        return new ResponseEntity<ErrorMessage>(
+                new ErrorMessage(ex.getMessage()), new HttpHeaders(), ex.getHttpStatus());
+    }
+
+    @ExceptionHandler({OrderAlreadyCompletedException.class})
+    public ResponseEntity<ErrorMessage> handleOrderAlreadyCompletedException(
+            OrderAlreadyCompletedException ex) {
+        return new ResponseEntity<ErrorMessage>(
+                new ErrorMessage(ex.getMessage()), new HttpHeaders(), ex.getHttpStatus());
+    }
 }

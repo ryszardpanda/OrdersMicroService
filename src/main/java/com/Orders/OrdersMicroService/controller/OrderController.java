@@ -35,4 +35,11 @@ public class OrderController {
     log.info("New request for endpoint POST/api/order/cart/{cartId}/user/{userId} registered");
     return orderService.createOrder(userId, cartId, body);
   }
+
+  @PostMapping("/{orderId}/finalize")
+  public String testFinalizeOrder(@PathVariable String orderId) {
+    log.info("New request for endpoint POST/api/order/orders/{}/test-finalize registered", orderId);
+    orderService.finalizeOrder(orderId);
+    return "Order finalized successfully";
+  }
 }

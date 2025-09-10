@@ -1,8 +1,8 @@
 package com.Orders.OrdersMicroService.service;
 
 import com.Orders.OrdersMicroService.client.CartClient;
-import com.Orders.OrdersMicroService.exeption.EmptyCartException;
-import com.Orders.OrdersMicroService.exeption.ForbiddenException;
+import com.Orders.OrdersMicroService.common.OrderStatus;
+import com.Orders.OrdersMicroService.exeption.*;
 import com.Orders.OrdersMicroService.mapper.OrderMapper;
 import com.Orders.OrdersMicroService.model.dto.cart.CartDTO;
 import com.Orders.OrdersMicroService.model.dto.order.CreateOrderRequestDTO;
@@ -11,6 +11,8 @@ import com.Orders.OrdersMicroService.model.dto.order.OrderSummaryDTO;
 import com.Orders.OrdersMicroService.model.entity.OrderEntity;
 import com.Orders.OrdersMicroService.model.entity.OrderItemConfigEntity;
 import com.Orders.OrdersMicroService.model.entity.OrderItemEntity;
+import com.Orders.OrdersMicroService.model.event.InvoiceRequestEvent;
+import com.Orders.OrdersMicroService.rabbit.OrderEventPublisher;
 import com.Orders.OrdersMicroService.repository.OrderEntityRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -34,11 +36,29 @@ public class OrderService {
     private final CartClient cartClient;
     private final OrderEntityRepository orderRepository;
     private final OrderMapper orderMapper;
+    private final OrderEventPublisher eventPublisher;
     private static final BigDecimal VAT_MULTIPLIER = BigDecimal.valueOf(1.23);
 
     public Page<OrderSummaryDTO> getOrdersByUser(String userId, Pageable p) {
         return orderRepository.findAllByUserId(userId, p)
                 .map(orderMapper::toSummary);
+    }
+
+    @Transactional
+    public void finalizeOrder(String orderId) {
+        OrderEntity order = orderRepository.findByOrderNumber(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId, HttpStatus.NOT_FOUND));
+
+        if (order.getStatus() == OrderStatus.COMPLETED) {
+            throw new OrderAlreadyCompletedException("Order " + order.getOrderNumber() + " is already completed", HttpStatus.CONFLICT);
+        }
+
+        order.setStatus(OrderStatus.COMPLETED);
+        orderRepository.save(order);
+
+        publishInvoiceEvent(order);
+
+        log.info("Order {} finalized and invoice request sent", order.getOrderNumber());
     }
 
     @Transactional
@@ -123,5 +143,16 @@ public class OrderService {
     private String generateNumber() {
         int rand = ThreadLocalRandom.current().nextInt(10000, 99999);
         return "ORD-" + LocalDate.now().getYear() + "-" + rand;
+    }
+
+    private void publishInvoiceEvent(OrderEntity order) {
+        try {
+            InvoiceRequestEvent invoiceEvent = orderMapper.toInvoiceRequestEvent(order);
+            eventPublisher.publishInvoiceRequest(invoiceEvent);
+            log.debug("Invoice event published for order: {}", order.getOrderNumber());
+        } catch (EventPublishingException e) {
+            log.error("Failed to publish invoice event for order: {}", order.getOrderNumber(), e);
+            throw e;
+        }
     }
 }
