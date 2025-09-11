@@ -53,5 +53,6 @@ public interface OrderMapper {
     @Mapping(target = "zip", source = "billing.zip")
     @Mapping(target = "phone", source = "billing.phone")
     @Mapping(target = "orderCreatedAt", source = "createdAt")
+    @Mapping(target = "orderId", source = "id")
     InvoiceRequestEvent toInvoiceRequestEvent(OrderEntity order);
 }
