@@ -3,6 +3,7 @@ package com.Orders.OrdersMicroService.mapper;
 import com.Orders.OrdersMicroService.model.dto.cart.CartConfigurationDTO;
 import com.Orders.OrdersMicroService.model.dto.cart.CartDTO;
 import com.Orders.OrdersMicroService.model.dto.cart.CartItemDTO;
+import com.Orders.OrdersMicroService.model.dto.invoice.InvoiceItemDto;
 import com.Orders.OrdersMicroService.model.dto.order.CreateOrderRequestDTO;
 import com.Orders.OrdersMicroService.model.dto.order.OrderAddressDTO;
 import com.Orders.OrdersMicroService.model.dto.order.OrderResponseDTO;
@@ -54,5 +55,14 @@ public interface OrderMapper {
     @Mapping(target = "phone", source = "billing.phone")
     @Mapping(target = "orderCreatedAt", source = "createdAt")
     @Mapping(target = "orderId", source = "id")
+    @Mapping(target = "items", source = "items")
     InvoiceRequestEvent toInvoiceRequestEvent(OrderEntity order);
+
+    @Mapping(target = "productId", source = "productId")
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "unitPrice", source = "unitPrice")
+    @Mapping(target = "quantity", source = "quantity")
+    @Mapping(target = "lineNet", source = "lineNet")
+    @Mapping(target = "lineGross", source = "lineGross")
+    InvoiceItemDto toInvoiceItemDto(OrderItemEntity orderItem);
 }

@@ -1,6 +1,6 @@
 package com.Orders.OrdersMicroService.model.event;
 
-import com.Orders.OrdersMicroService.model.dto.order.OrderItemDTO;
+import com.Orders.OrdersMicroService.model.dto.invoice.InvoiceItemDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,7 +31,7 @@ public class InvoiceRequestEvent {
     private BigDecimal shippingCost;
     private String currency;
 
-    private List<OrderItemDTO> items;
+    private List<InvoiceItemDto> items;
 
     private LocalDateTime orderCreatedAt;
 }
